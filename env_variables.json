@@ -1,0 +1,8 @@
+{
+    "robo_env_vars":[
+        {
+        "rb_order_website":"https://robotsparebinindustries.com/#/robot-order",
+        "rb_order_requests_file":"https://robotsparebinindustries.com/orders.csv"
+        }
+    ]
+}
