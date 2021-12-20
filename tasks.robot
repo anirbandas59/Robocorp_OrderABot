@@ -14,6 +14,7 @@ Library           String
 Library           RPA.Tables
 Library           OperatingSystem
 Library           RPA.Archive
+Library           RPA.Dialogs
 
 *** Variables ***
 ${ENV_VAR_FILE}=    env_variables.json
@@ -37,8 +38,17 @@ Order Build-A-Bot from RobotSpareBin Industries Inc. and save the receipt/screen
     Log    Starting Build-A-Bot Order.
     # Get Variables From JSON file
     Get Variables from JSON File
+    Access Secret Vaults
+    ${fileUrl}=    Get Orders URL from User
+    ${length}=    Get Length    ${fileUrl}
+    IF    ${length} == 0
+        ${fileUrl}
+        ...    Set Variable    ${ENV_JSON}[rb_order_requests_file]
+        Notify User with Default Value
+        ...    Using default orders file from URL: ${fileUrl}
+    END
     # Download Orders file from the intranet site
-    Download Orders CSV File
+    Download Orders CSV File    url=${fileUrl}
     ${file_exists}=    Does File Exist    ${ORDERS_FILE}
     IF    ${file_exists} == ${true}
         # Read the CSV File and get orders
@@ -50,7 +60,10 @@ Order Build-A-Bot from RobotSpareBin Industries Inc. and save the receipt/screen
     # Fill in the dummy order into the site
     FOR    ${order}    IN    @{ROBOT_ORDERS}
         Log    ${order}
-        Wait Until Keyword Succeeds    3x    10    Fill the form and Submit the order    ${order}
+        Wait Until Keyword Succeeds
+        ...    ${ENV_JSON}[rb_retry_limit]
+        ...    ${ENV_JSON}[rb_retry_interval]
+        ...    Fill the form and Submit the order    ${order}
         Sleep    5
         Run Keyword And Continue On Failure    Get Receipt and Save Screenshot in PDF    ${order}[Order number]
         # Create Error Log File    ${order}[Order number]_Error.pdf
@@ -92,9 +105,10 @@ Remove Annoying alert
     END
 
 Download Orders CSV File
-    @{orders}=    Split String From Right    ${ENV_JSON}[rb_order_requests_file]    /    1
+    [Arguments]    ${url}
+    @{orders}=    Split String From Right    ${url}    /    1
     Set Global Variable    ${ORDERS_FILE}    ${orders}[1]
-    Download    ${ENV_JSON}[rb_order_requests_file]    target_file=${orders}[1]    overwrite=${True}
+    Download    ${url}    target_file=${orders}[1]    overwrite=${True}
 
 Read Orders from CSV File
     ${orders}=
@@ -140,7 +154,7 @@ Preview and Take Screenshot of Robot
     ...    ${filename}
     ${file_exists}=    Does File Exist    $filename
     IF    ${file_exists}
-        Remove File    ${OUTPUT_DIR}${/}${filename}
+        RPA.FileSystem.Remove File    ${OUTPUT_DIR}${/}${filename}
     END
     Screenshot    ${PREVIEW_SELECTOR}    ${OUTPUT_DIR}${/}${filename}
     Assert File is present or not    ${OUTPUT_DIR}${/}${filename}
@@ -189,7 +203,7 @@ Convert HTML to PDF
     ...    ${filecontent}
     ${file_exists}=    Does File Exist    ${OUTPUT_DIR}${/}${filename}
     IF    ${file_exists}
-        Remove File    ${OUTPUT_DIR}${/}${filename}
+        RPA.FileSystem.Remove File    ${OUTPUT_DIR}${/}${filename}
     END
     Html To Pdf
     ...    ${filecontent}
@@ -201,20 +215,39 @@ Create Error Log File
     Touch File    ${filepath}
 
 Create Archived File of receipts
-    ${zip_file_name}=    Set Variable    ${OUTPUT_DIR}\PDFs.zip
-    ${zip_folder_name}=    Set Variable    ${OUTPUT_DIR}\PDFs\
+    ${zip_file_name}=    Set Variable    ${OUTPUT_DIR}${/}PDFs.zip
+    ${zip_folder_name}=    Set Variable    ${OUTPUT_DIR}${/}PDFs
     ${folder_exists}=    Does Directory Exist    ${zip_folder_name}
     IF    ${folder_exists} == ${true}
-        RPA.FileSystem.Remove Directory    $zip_folder_name    recursive=true
+        RPA.FileSystem.Remove Directory    ${zip_folder_name}    recursive=true
+        RPA.FileSystem.Create Directory    ${zip_folder_name}
     ELSE
-        RPA.FileSystem.Create Directory    $zip_folder_name
+        RPA.FileSystem.Create Directory    ${zip_folder_name}
     END
     ${pdf_files}=    List Directory    path=${OUTPUT_DIR}    pattern=*.pdf
     FOR    ${pdf_file}    IN    @{pdf_files}
-        Log    ${pdf_file}
-        RPA.FileSystem.Move File    ${OUTPUT_DIR}\${pdf_file}    $zip_folder_name
+        Log    ${OUTPUT_DIR}${/}${pdf_file}
+        RPA.FileSystem.Move File
+        ...    ${OUTPUT_DIR}${/}${pdf_file}
+        ...    ${zip_folder_name}${/}${pdf_file}
     END
-    Archive Folder With Zip    $zip_folder_name    ${zip_file_name}
+    Archive Folder With Zip    ${zip_folder_name}    ${zip_file_name}
+
+Get Orders URL from User
+    Add heading    Provide URL for the orders CSV file
+    Add text input    fileUrl    label=Orders File URL
+    ${result}=    Run dialog    title=Enter URL
+    [Return]    ${result.fileUrl}
+
+Notify User with Default Value
+    [Arguments]    ${message}
+    Add icon    Success
+    Add heading    ${message}
+    Run dialog    title=Information
+
+Access Secret Vaults
+    ${secret}=    Get Secret    credentials
+    Notify User with Default Value    Fetching Secrets from Vault: ${secret}[username] ...
 
 Close the Browser
     Close Browser

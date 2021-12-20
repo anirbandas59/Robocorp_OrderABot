@@ -10,5 +10,7 @@
     "preview_selector":"//*[@id=\"robot-preview-image\"]",
     "error_message_selector":"css:div.alert-danger",
     "receipt_selector":"//*[@id='receipt']",
-    "order_another_btn_selector":"//*[@id=\"order-another\"]"
+    "order_another_btn_selector":"//*[@id=\"order-another\"]",
+    "rb_retry_limit":"3x",
+    "rb_retry_interval":15
 }
