@@ -35,10 +35,10 @@ ${RECEIPT_SELECTOR}=    ${null}
 
 *** Tasks ***
 Order Build-A-Bot from RobotSpareBin Industries Inc. and save the receipt/screenshot to PDF and create zipped archive.
-    Log    Starting Build-A-Bot Order.
+    # Log    Starting Build-A-Bot Order.
     # Get Variables From JSON file
     Get Variables from JSON File
-    Access Secret Vaults
+    Run Keyword And Continue On Failure    Access Secret Vaults
     ${fileUrl}=    Get Orders URL from User
     ${length}=    Get Length    ${fileUrl}
     IF    ${length} == 0
@@ -53,7 +53,7 @@ Order Build-A-Bot from RobotSpareBin Industries Inc. and save the receipt/screen
     IF    ${file_exists} == ${true}
         # Read the CSV File and get orders
         ${ROBOT_ORDERS}=    Read Orders from CSV File
-        Log    ${ROBOT_ORDERS}
+        # Log    ${ROBOT_ORDERS}
     END
     # Open RobotSpareBin Industries Inc site
     Open intranet site
@@ -88,10 +88,10 @@ Get Variables from JSON File
     Set Global Variable    ${PREVIEW_SELECTOR}    ${ENV_JSON}[preview_selector]
     Set Global Variable    ${ERROR_MESSAGE_SELECTOR}    ${ENV_JSON}[error_message_selector]
     Set Global Variable    ${RECEIPT_SELECTOR}    ${ENV_JSON}[receipt_selector]
-    Log    ${ROBOT_SPECS}
+    # Log    ${ROBOT_SPECS}
 
 Open intranet site
-    Log    Opening ${ENV_JSON}[rb_order_website]
+    # Log    Opening ${ENV_JSON}[rb_order_website]
     Open Available Browser    ${ENV_JSON}[rb_order_website]
     # Click on OK alert button
     Remove Annoying alert
@@ -226,7 +226,7 @@ Create Archived File of receipts
     END
     ${pdf_files}=    List Directory    path=${OUTPUT_DIR}    pattern=*.pdf
     FOR    ${pdf_file}    IN    @{pdf_files}
-        Log    ${OUTPUT_DIR}${/}${pdf_file}
+        # Log    ${OUTPUT_DIR}${/}${pdf_file}
         RPA.FileSystem.Move File
         ...    ${OUTPUT_DIR}${/}${pdf_file}
         ...    ${zip_folder_name}${/}${pdf_file}
