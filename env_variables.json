@@ -1,4 +1,14 @@
 {    
     "rb_order_website":"https://robotsparebinindustries.com/#/robot-order",
-    "rb_order_requests_file":"https://robotsparebinindustries.com/orders.csv"
+    "rb_order_requests_file":"https://robotsparebinindustries.com/orders.csv",
+    "popup_OK_button_selector":"//*[@id=\"root\"]//button[1]",
+    "head_selector":"//*[@id=\"head\"]",
+    "body_selector_group":"body",
+    "body_selector_value":"id-body-{0}",
+    "legs_selector":"//*[contains(text(),\"Legs\")]//following-sibling::input",
+    "address_selector":"//*[@id=\"address\"]",
+    "preview_selector":"//*[@id=\"robot-preview-image\"]",
+    "error_message_selector":"css:div.alert-danger",
+    "receipt_selector":"//*[@id='receipt']",
+    "order_another_btn_selector":"//*[@id=\"order-another\"]"
 }
