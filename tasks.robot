@@ -247,7 +247,7 @@ Notify User with Default Value
 
 Access Secret Vaults
     ${secret}=    Get Secret    credentials
-    Notify User with Default Value    Fetching Secrets from Vault: ${secret}[username] ...
+    Notify User with Default Value    Fetching Secrets from Vault: ${secret}[username]
 
 Close the Browser
     Close Browser
